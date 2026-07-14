@@ -3,47 +3,52 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Absensi QR Kelas 4A</title>
 
 <link rel="stylesheet" href="style.css">
 
-<script src="https://unpkg.com/html5-qrcode"></script>
+
+<!-- Library QR Scanner -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
 
 </head>
 
+
 <body>
 
+
 <div class="container">
+
 
 <h1>📚 ABSENSI SISWA</h1>
 
 <h2>Kelas 4A</h2>
 
+
 <div id="reader"></div>
 
+
 <div id="hasil">
-
-Silakan scan QR Code
-
+Silakan tekan tombol mulai scan
 </div>
+
 
 <button id="scanBtn">
 Mulai Scan
 </button>
 
+
 </div>
 
-<script src="https://unpkg.com/html5-qrcode"></script>
+
+
 <script src="app.js"></script>
+
 
 </body>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-<script>
-console.log("TES QR:", typeof Html5Qrcode);
-</script>
-
-<script src="app.js"></script>
 </html>
