@@ -44,7 +44,7 @@ function onScanSuccess(decodedText) {
         "?action=scan&id=" +
         encodeURIComponent(decodedText);
 
-    fetch(url)
+    fetch("https://script.google.com/macros/s/AKfycbyl9HGsJhMxHRl0aE1rMyrr7kqu-rex2CpQ0Utk5P-GlLjvWUAqk8zoZTukWsvTFpTz/exec")
         .then(res => res.json())
         .then(data => {
 
