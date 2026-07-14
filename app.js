@@ -6,59 +6,93 @@ const tombol = document.getElementById("scanBtn");
 let html5QrCode;
 let scanning = false;
 
+
 tombol.addEventListener("click", startScanner);
 
 
-function startScanner() {
+function startScanner(){
 
-    if (scanning) return;
+    if(scanning) return;
 
-    scanning = true;
+    scanning=true;
 
-    tombol.style.display = "none";
+    tombol.style.display="none";
 
-    hasil.innerHTML = "Membuka kamera...";
+    hasil.innerHTML="Membuka kamera...";
 
 
     html5QrCode = new Html5QrCode("reader");
 
 
-    html5QrCode.start(
-        {
-            facingMode: "environment"
-        },
-        {
-            fps: 10,
-            qrbox: 250
-        },
-        onScanSuccess
-    );
+    Html5QrCode.getCameras()
+    .then(cameras=>{
+
+
+        if(cameras.length===0){
+
+            throw "Kamera tidak ditemukan";
+
+        }
+
+
+        // pilih kamera belakang jika ada
+        let cameraId = cameras[cameras.length-1].id;
+
+
+        html5QrCode.start(
+            cameraId,
+            {
+                fps:10,
+                qrbox:250
+            },
+            onScanSuccess
+        );
+
+
+    })
+    .catch(err=>{
+
+
+        console.log(err);
+
+        hasil.innerHTML =
+        "❌ Kamera tidak bisa dibuka<br><br>" +
+        err;
+
+
+        tombol.style.display="block";
+
+        scanning=false;
+
+
+    });
+
 
 }
 
 
 
-function onScanSuccess(decodedText) {
+function onScanSuccess(decodedText){
 
 
     html5QrCode.stop();
 
 
-    hasil.innerHTML = "Mengirim absensi...";
+    hasil.innerHTML="Mengirim absensi...";
 
 
     const url =
-        WEBAPP +
-        "?action=scan&id=" +
-        encodeURIComponent(decodedText);
+    WEBAPP+
+    "?action=scan&id="+
+    encodeURIComponent(decodedText);
 
 
 
     fetch(url)
 
-    .then(res => res.json())
+    .then(res=>res.json())
 
-    .then(data => {
+    .then(data=>{
 
 
         if(data.success){
@@ -66,11 +100,10 @@ function onScanSuccess(decodedText) {
 
             hasil.className="berhasil";
 
-
-            hasil.innerHTML =
-            "✅<br><br>" +
-            data.nama +
-            "<br><br>" +
+            hasil.innerHTML=
+            "✅<br><br>"+
+            data.nama+
+            "<br><br>"+
             data.message;
 
 
@@ -79,14 +112,12 @@ function onScanSuccess(decodedText) {
 
             hasil.className="gagal";
 
-
-            hasil.innerHTML =
-            "❌<br><br>" +
+            hasil.innerHTML=
+            "❌<br><br>"+
             data.message;
 
 
         }
-
 
 
         setTimeout(()=>{
@@ -107,6 +138,7 @@ function onScanSuccess(decodedText) {
 
     })
 
+
     .catch(err=>{
 
 
@@ -115,9 +147,8 @@ function onScanSuccess(decodedText) {
 
         hasil.className="gagal";
 
-
-        hasil.innerHTML =
-        "❌<br>Server tidak dapat dihubungi";
+        hasil.innerHTML=
+        "❌ Server tidak dapat dihubungi";
 
 
         tombol.style.display="block";
