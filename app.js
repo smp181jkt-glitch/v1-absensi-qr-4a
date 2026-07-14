@@ -3,7 +3,7 @@ const WEBAPP ="https://script.google.com/macros/s/AKfycbzaTmvlD9W5f7yg2iBpaSPBCR
 const hasil = document.getElementById("hasil");
 const tombol = document.getElementById("scanBtn");
 
-let Html5Qrcode;
+let Html5QrCode;
 let scanning = false;
 
 
@@ -21,7 +21,7 @@ function startScanner(){
     hasil.innerHTML="Membuka kamera...";
 
 
-    Html5Qrcode = new Html5Qrcode("reader");
+    Html5QrCode = new Html5Qrcode("reader");
 
 
     Html5Qrcode.getCameras()
