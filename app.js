@@ -1,95 +1,101 @@
-const WEBAPP =
-"https://script.google.com/macros/s/AKfycbzScCPxNEXGGyo1X0ArFx_WYYzYgu5qLowcRo7TNmrmbKH3gNVEWWKzcUFrWcLKPTHr/exec";
+const WEBAPP = "https://script.google.com/macros/s/AKfycbzScCPxNEXGGyo1X0ArFx_WYYzYgu5qLowcRo7TNmrmbKH3gNVEWWKzcUFrWcLKPTHr/exec";
 
-const hasil=document.getElementById("hasil");
-const tombol=document.getElementById("scanBtn");
+const hasil = document.getElementById("hasil");
+const tombol = document.getElementById("scanBtn");
 
-let scanner;
-let sedangScan=false;
+let html5QrCode;
+let scanning = false;
 
-tombol.onclick=function(){
+tombol.addEventListener("click", startScanner);
 
-if(sedangScan)return;
+function startScanner() {
 
-scanner=new Html5Qrcode("reader");
+    if (scanning) return;
 
-scanner.start(
+    scanning = true;
 
-{facingMode:"environment"},
+    tombol.style.display = "none";
 
-{
-fps:10,
-qrbox:250
-},
+    hasil.innerHTML = "Membuka kamera...";
 
-success,
-error
+    html5QrCode = new Html5Qrcode("reader");
 
-);
-
-sedangScan=true;
-
-tombol.style.display="none";
-
-}
-
-function success(qr){
-
-scanner.stop();
-
-hasil.innerHTML="Mengirim data...";
-
-fetch(WEBAPP+"?no="+encodeURIComponent(qr))
-
-.then(r=>r.json())
-
-.then(data=>{
-
-if(data.sukses){
-
-hasil.className="berhasil";
-
-hasil.innerHTML=
-"✅<br><br>"+data.nama+
-"<br><br>"+data.pesan;
-
-}else{
-
-hasil.className="gagal";
-
-hasil.innerHTML=
-"❌<br><br>"+data.pesan;
+    html5QrCode.start(
+        {
+            facingMode: "environment"
+        },
+        {
+            fps: 10,
+            qrbox: 250
+        },
+        onScanSuccess
+    );
 
 }
 
-setTimeout(()=>{
+function onScanSuccess(decodedText) {
 
-hasil.className="";
+    html5QrCode.stop();
 
-hasil.innerHTML="Silakan scan QR berikutnya";
+    hasil.innerHTML = "Mengirim absensi...";
 
-tombol.style.display="block";
+    const url =
+        WEBAPP +
+        "?action=scan&id=" +
+        encodeURIComponent(decodedText);
 
-sedangScan=false;
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
 
-},3000);
+            if (data.success) {
 
-})
+                hasil.className = "berhasil";
 
-.catch(()=>{
+                hasil.innerHTML =
+                    "✅<br><br>" +
+                    data.nama +
+                    "<br><br>" +
+                    data.message;
 
-hasil.className="gagal";
+            } else {
 
-hasil.innerHTML="Server tidak dapat dihubungi";
+                hasil.className = "gagal";
 
-tombol.style.display="block";
+                hasil.innerHTML =
+                    "❌<br><br>" +
+                    data.nama +
+                    "<br><br>" +
+                    data.message;
 
-sedangScan=false;
+            }
 
-});
+            setTimeout(() => {
 
-}
+                hasil.className = "";
 
-function error(){
+                hasil.innerHTML = "Silakan scan QR berikutnya";
+
+                tombol.style.display = "block";
+
+                scanning = false;
+
+            }, 2500);
+
+        })
+        .catch(err => {
+
+            console.log(err);
+
+            hasil.className = "gagal";
+
+            hasil.innerHTML =
+                "❌<br>Server tidak dapat dihubungi";
+
+            tombol.style.display = "block";
+
+            scanning = false;
+
+        });
 
 }
