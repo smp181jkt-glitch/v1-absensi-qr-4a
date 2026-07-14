@@ -3,7 +3,7 @@ const WEBAPP ="https://script.google.com/macros/s/AKfycbzaTmvlD9W5f7yg2iBpaSPBCR
 const hasil = document.getElementById("hasil");
 const tombol = document.getElementById("scanBtn");
 
-let html5QrCode;
+let Html5Qrcode;
 let scanning = false;
 
 
@@ -21,10 +21,10 @@ function startScanner(){
     hasil.innerHTML="Membuka kamera...";
 
 
-    html5QrCode = new Html5QrCode("reader");
+    Html5Qrcode = new Html5Qrcode("reader");
 
 
-    Html5QrCode.getCameras()
+    Html5Qrcode.getCameras()
     .then(cameras=>{
 
 
@@ -39,7 +39,7 @@ function startScanner(){
         let cameraId = cameras[cameras.length-1].id;
 
 
-        html5QrCode.start(
+        Html5Qrcode.start(
             cameraId,
             {
                 fps:10,
@@ -75,7 +75,7 @@ function startScanner(){
 function onScanSuccess(decodedText){
 
 
-    html5QrCode.stop();
+    Html5Qrcode.stop();
 
 
     hasil.innerHTML="Mengirim absensi...";
