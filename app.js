@@ -1,63 +1,102 @@
-const WEBAPP ="https://script.google.com/macros/s/AKfycbzaTmvlD9W5f7yg2iBpaSPBCRsuUNZbQNXY2ZTP0WzZVgk1Gx8nY7oE_xvaXPuYyOyJ/exec";
+const WEBAPP = "https://script.google.com/macros/s/AKfycbzaTmvlD9W5f7yg2iBpaSPBCRsuUNZbQNXY2ZTP0WzZVgk1Gx8nY7oE_xvaXPuYyOyJ/exec";
 
 const hasil = document.getElementById("hasil");
 const tombol = document.getElementById("scanBtn");
 
-let Html5QrCode;
+let scanner = null;
 let scanning = false;
 
 
-tombol.addEventListener("click", startScanner);
+tombol.addEventListener("click", mulaiScan);
 
 
-function startScanner(){
+function mulaiScan(){
 
-    if(scanning) return;
+    if(scanning){
+        return;
+    }
 
-    scanning=true;
+    scanning = true;
 
-    tombol.style.display="none";
+    tombol.style.display = "none";
 
-    hasil.innerHTML="Membuka kamera...";
+    hasil.innerHTML = "Membuka kamera...";
 
 
-    Html5QrCode = new Html5Qrcode("reader");
+    scanner = new Html5Qrcode("reader");
 
 
     Html5Qrcode.getCameras()
-    .then(cameras=>{
+    .then(cameras => {
 
 
-        if(cameras.length===0){
+        if(cameras.length === 0){
 
             throw "Kamera tidak ditemukan";
 
         }
 
 
-        // pilih kamera belakang jika ada
-        let cameraId = cameras[cameras.length-1].id;
+        // cari kamera belakang
+        let cameraId = cameras[0].id;
 
 
-        Html5Qrcode.start(
+        for(let i=0; i<cameras.length; i++){
+
+            if(
+              cameras[i].label.toLowerCase().includes("back") ||
+              cameras[i].label.toLowerCase().includes("rear")
+            ){
+
+                cameraId = cameras[i].id;
+                break;
+
+            }
+
+        }
+
+
+
+        scanner.start(
+
             cameraId,
+
             {
                 fps:10,
                 qrbox:250
             },
-            onScanSuccess
+
+
+            function(decodedText){
+
+
+                prosesQR(decodedText);
+
+
+            },
+
+
+            function(errorMessage){
+
+                // abaikan error scan
+
+            }
+
         );
 
 
     })
-    .catch(err=>{
 
 
-        console.log(err);
+    .catch(error=>{
+
+
+        console.log(error);
+
 
         hasil.innerHTML =
         "❌ Kamera tidak bisa dibuka<br><br>" +
-        err;
+        error;
 
 
         tombol.style.display="block";
@@ -72,25 +111,26 @@ function startScanner(){
 
 
 
-function onScanSuccess(decodedText){
+function prosesQR(id){
 
 
-    Html5Qrcode.stop();
+    scanner.stop();
 
 
-    hasil.innerHTML="Mengirim absensi...";
+    hasil.innerHTML =
+    "Mengirim absensi...";
 
 
     const url =
-    WEBAPP+
-    "?action=scan&id="+
-    encodeURIComponent(decodedText);
+    WEBAPP +
+    "?action=scan&id=" +
+    encodeURIComponent(id);
 
 
 
     fetch(url)
 
-    .then(res=>res.json())
+    .then(response=>response.json())
 
     .then(data=>{
 
@@ -100,10 +140,11 @@ function onScanSuccess(decodedText){
 
             hasil.className="berhasil";
 
-            hasil.innerHTML=
-            "✅<br><br>"+
-            data.nama+
-            "<br><br>"+
+
+            hasil.innerHTML =
+            "✅<br><br>" +
+            data.nama +
+            "<br><br>" +
             data.message;
 
 
@@ -112,12 +153,14 @@ function onScanSuccess(decodedText){
 
             hasil.className="gagal";
 
-            hasil.innerHTML=
-            "❌<br><br>"+
+
+            hasil.innerHTML =
+            "❌<br><br>" +
             data.message;
 
 
         }
+
 
 
         setTimeout(()=>{
@@ -125,7 +168,9 @@ function onScanSuccess(decodedText){
 
             hasil.className="";
 
-            hasil.innerHTML="Silakan scan QR berikutnya";
+            hasil.innerHTML =
+            "Silakan scan QR berikutnya";
+
 
             tombol.style.display="block";
 
@@ -139,15 +184,16 @@ function onScanSuccess(decodedText){
     })
 
 
-    .catch(err=>{
+    .catch(error=>{
 
 
-        console.log(err);
+        console.log(error);
 
 
         hasil.className="gagal";
 
-        hasil.innerHTML=
+
+        hasil.innerHTML =
         "❌ Server tidak dapat dihubungi";
 
 
