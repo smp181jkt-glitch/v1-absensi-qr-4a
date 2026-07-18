@@ -1,208 +1,42 @@
-const WEBAPP = "https://script.google.com/macros/s/AKfycbxl9CRWC7nP12sqaQRH82JmDhY0L34YzgFEPVFLpKuwlbL1z5feZNDYW0P5KSWxg5CM/exec";
+// 1. Konfigurasi
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbziYrjjBKv0zcdxee5paQVXBmDLbaF7FTYijWyLJAMwlRbdwjA_e3bHH2keicMjK0y4/exec";
+const html5QrCode = new Html5QrCode("reader");
 
-const hasil = document.getElementById("hasil");
-const tombol = document.getElementById("scanBtn");
+document.getElementById('scanBtn').addEventListener('click', async () => {
+    const scanBtn = document.getElementById('scanBtn');
+    const hasil = document.getElementById('hasil');
 
-let scanner = null;
-let scanning = false;
+    scanBtn.disabled = true;
+    hasil.innerText = "Membuka kamera...";
 
+    try {
+        await html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            async (decodedText) => {
+                // Berhenti segera
+                await html5QrCode.stop();
+                scanBtn.disabled = false;
+                hasil.innerText = "Data terdeteksi, mengirim ke server...";
 
-tombol.addEventListener("click", mulaiScan);
+                try {
+                    const response = await fetch(`${URL_WEB_APP}?action=scan&id=${encodeURIComponent(decodedText)}`);
+                    const data = await response.json();
 
-
-function mulaiScan(){
-
-    if(scanning){
-        return;
-    }
-
-    scanning = true;
-
-    tombol.style.display = "none";
-
-    hasil.innerHTML = "Membuka kamera...";
-
-
-    scanner = new Html5Qrcode("reader");
-
-
-    Html5Qrcode.getCameras()
-    .then(cameras => {
-
-
-        if(cameras.length === 0){
-
-            throw "Kamera tidak ditemukan";
-
-        }
-
-
-        // cari kamera belakang
-        let cameraId = cameras[0].id;
-
-
-        for(let i=0; i<cameras.length; i++){
-
-            if(
-              cameras[i].label.toLowerCase().includes("back") ||
-              cameras[i].label.toLowerCase().includes("rear")
-            ){
-
-                cameraId = cameras[i].id;
-                break;
-
-            }
-
-        }
-
-
-
-        scanner.start(
-
-            cameraId,
-
-            {
-                fps:10,
-                qrbox:250
+                    if (data.success) {
+                        hasil.innerHTML = `✅ <b>Berhasil!</b><br>Nama: ${data.nama}<br>${data.message}`;
+                    } else {
+                        hasil.innerHTML = `⚠️ <b>Gagal!</b><br>${data.message}`;
+                    }
+                } catch (err) {
+                    hasil.innerText = "Gagal terhubung ke server.";
+                }
             },
-
-
-            function(decodedText){
-
-
-                prosesQR(decodedText);
-
-
-            },
-
-
-            function(errorMessage){
-
-                // abaikan error scan
-
-            }
-
+            (errorMessage) => { /* Abaikan error scanning */ }
         );
-
-
-    })
-
-
-    .catch(error=>{
-
-
-        console.log(error);
-
-
-        hasil.innerHTML =
-        "❌ Kamera tidak bisa dibuka<br><br>" +
-        error;
-
-
-        tombol.style.display="block";
-
-        scanning=false;
-
-
-    });
-
-
-}
-
-
-
-function prosesQR(id){
-
-
-    scanner.stop();
-
-
-    hasil.innerHTML =
-    "Mengirim absensi...";
-
-
-    const url =
-    WEBAPP +
-    "?action=scan&id=" +
-    encodeURIComponent(id);
-
-
-
-    fetch(url)
-
-    .then(response=>response.json())
-
-    .then(data=>{
-
-
-        if(data.success){
-
-
-            hasil.className="berhasil";
-
-
-            hasil.innerHTML =
-            "✅<br><br>" +
-            data.nama +
-            "<br><br>" +
-            data.message;
-
-
-        }else{
-
-
-            hasil.className="gagal";
-
-
-            hasil.innerHTML =
-            "❌<br><br>" +
-            data.message;
-
-
-        }
-
-
-
-        setTimeout(()=>{
-
-
-            hasil.className="";
-
-            hasil.innerHTML =
-            "Silakan scan QR berikutnya";
-
-
-            tombol.style.display="block";
-
-            scanning=false;
-
-
-        },2500);
-
-
-
-    })
-
-
-    .catch(error=>{
-
-
-        console.log(error);
-
-
-        hasil.className="gagal";
-
-
-        hasil.innerHTML =
-        "❌ Server tidak dapat dihubungi";
-
-
-        tombol.style.display="block";
-
-        scanning=false;
-
-
-    });
-
-
-}
+    } catch (err) {
+        scanBtn.disabled = false;
+        hasil.innerText = "Kamera tidak dapat diakses.";
+        console.error("Camera Error:", err);
+    }
+});
