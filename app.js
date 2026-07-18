@@ -1,5 +1,5 @@
 // 1. Konfigurasi
-const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbziYrjjBKv0zcdxee5paQVXBmDLbaF7FTYijWyLJAMwlRbdwjA_e3bHH2keicMjK0y4/exec";
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzlkSQvsXlOMNpn3il8APigg5oYBRMbwsNiG9d_HkDSCAVMIoHNkSARSIsOf_Jd-SN0/exec";
 const html5QrCode = new Html5QrCode("reader");
 
 document.getElementById('scanBtn').addEventListener('click', async () => {
